@@ -1,22 +1,34 @@
-const article = document.querySelector("article");
+function parseProblems() {
+  let nextButton = document.querySelector('button[aria-label="next"]:enabled')
+  nextButton.click();  
+  // let buttons = Array.from(document.querySelectorAll('button'));
+  // buttons = buttons.filter(button => button.innerText == "Status");
+  // const statusButton = buttons[0];
+  // statusButton.click();
+  // let options = Array.from(document.querySelectorAll('div[role="menuitem"]:has(span)'));
+  // options = options.filter(option => option.innerText == "Solved")
+  // console.log(options)
+  // let option = options[0];
+  // option.click()
 
-// `document.querySelector` may return null if the selector doesn't match anything.
-if (article) {
-  const text = article.textContent;
-  const wordMatchRegExp = /[^\s]+/g; // Regular expression
-  const words = text.matchAll(wordMatchRegExp);
-  // matchAll returns an iterator, convert to array to get word count
-  const wordCount = [...words].length;
-  const readingTime = Math.round(wordCount / 200);
-  const badge = document.createElement("p");
-  // Use the same styling as the publish information in an article's header
-  badge.classList.add("color-secondary-text", "type--caption");
-  badge.textContent = `⏱️ ${readingTime} min read`;
+  // let  rowgroups = Array.from(document.querySelectorAll('div[role="rowgroup"]'));
+  // rowgroups = rowgroups.filter(rowgroup => rowgroup.querySelector("div[role='row']") != null)
+  // let rowgroup = rowgroups[0]
+  // let rows = Array.from(rowgroup.querySelectorAll('div[role="row"]'));
+  // rows = rows.map(row => row.querySelector('span[data-state="closed"]'))
+  // console.log(Array.from(rows));
+  }
 
-  // Support for API reference docs
-  const heading = article.querySelector("h1");
-  // Support for article docs with date
-  const date = article.querySelector("time")?.parentNode;
+} // end parseProblems
 
-  (date ?? heading).insertAdjacentElement("afterend", badge);
-}
+
+chrome.runtime.onMessage.addListener(
+  function(request, sender, sendResponse) {
+    parseProblems();
+    console.log(sender.tab ?
+                "from a content script:" + sender.tab.url :
+                "from the extension");
+    if (request.greeting === "hello")
+      sendResponse({farewell: "goodbye"});
+  }
+);
