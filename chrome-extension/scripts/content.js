@@ -29,7 +29,9 @@ async function getSolved(limit=50) {
   if (problemsList === undefined) {
     console.error("failed to get problem list");
     return;
-  }
+  } // end if
+  
+  // get the total size of problems and 
   const size = problemsList.total;
   let problems = problemsList['questions'];
   // check if there is more
@@ -41,15 +43,53 @@ async function getSolved(limit=50) {
       problems.push(...problemsList['questions']);
     } // end for i
   } // end if
+
+  async function getMoreInformation(problem) {
+    // do something with response here, not outside the function
+    const response = await fetch("https://leetcode.com/graphql", {
+      method: "POST",
+      body: JSON.stringify({
+        "query": "\n    query submissionList($offset: Int!, $limit: Int!, $lastKey: String, $questionSlug: String!, $lang: Int, $status: Int) {\n  questionSubmissionList(\n    offset: $offset\n    limit: $limit\n    lastKey: $lastKey\n    questionSlug: $questionSlug\n    lang: $lang\n    status: $status\n  ) {\n    lastKey\n    hasNext\n    submissions {\n      id\n      title\n      titleSlug\n      status\n      statusDisplay\n      lang\n      langName\n      runtime\n      timestamp\n      url\n      isPending\n      memory\n      hasNotes\n      notes\n      flagType\n      topicTags {\n        id\n      }\n    }\n  }\n}\n    ",
+        "variables": {
+          "questionSlug": problem,
+          "offset": 0,
+          "limit": 1,
+          "lastKey": null,
+          "status": 10, 
+        },
+        "operationName": "submissionList"
+      }),
+      headers: {
+        "Content-type": "application/json"
+      }
+    });
+    const data = await response.json();
+    return data["data"]["questionSubmissionList"]["submissions"];
+  } // end getProblems
+
+  // get extra information about each problem
+  problems = problems.map(problem => {
+    return new Problem(problem, null)
+  });
+  problems.forEach(async (problem) => {
+    await new Promise(resolve => {
+      const id = setTimeout(async () => {
+        const submissions = await getMoreInformation(problem.slug)
+        problem.addSubmission(submissions[0])
+        clearTimeout(id);
+        resolve();
+      }, 100);
+    }) // end 
+  });
+  console.log(problems);
+
   return problems;
 } // end parseProblems
-
 
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
     if (request.reason === "getsolved") {
       getSolved().then((data) => {
-          console.log(data);
           sendResponse(data);
       });
       return true;

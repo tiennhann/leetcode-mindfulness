@@ -4,7 +4,7 @@
     "description": "Extensions for Parsing Leetcode for Data About Solved Problems",
     "version": "1.0",
     "action": {
-        "default_popup": "/popups/hello.html",
+        "default_popup": "/popups/home.html",
         "default_icon": {
           "16": "images/icon-16.png",
           "32": "images/icon-32.png",
@@ -18,7 +18,7 @@
     "permissions": ["activeTab", "webNavigation", "scripting"],
     "content_scripts": [
         {
-          "js": ["scripts/content.js"],
+          "js": ["scripts/content.js", "scripts/problem.js"],
           "matches": [
             "https://leetcode.com/problemset/*"
           ]
